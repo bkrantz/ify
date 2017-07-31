@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+
+import json
+import os
+import sys
+import importlib
+cur_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, '%s/../src' % (cur_dir,))
+addons_directory = '%s/../addons' % (cur_dir,)
+sys.path.insert(0, addons_directory)
+import common
+import processor
+
+'''
+INPUTS
+-i | --input-file {filename}
+
+OPTIONS
+-t | --tab {custom_tab}
+-o | --output-file {filename}
+-f | --format-override {format}
+-v | --verbose
+-g | --gzip
+
+ACTIONS
+-V | --version
+-h | --help
+-m | --minify
+-p | --pretify
+
+USAGE
+pretifly [ACTION] [OPTIONS] [INPUT]
+'''
+
+# addon imports
+dirs = os.listdir(addons_directory)
+addons = {}
+for sub in dirs:
+	path = "%s/%s" % (addons_directory, sub, )
+	if os.path.isdir(path):
+		addons[sub] = path
+
+ignore = ["__init__"]
+file_ext = ".py"
+file_postfix = "_Fly"
+formats = {}
+for addon in addons:
+	for addon_file in os.listdir(addons[addon]):
+		if addon_file.endswith("%s%s" % (file_postfix, file_ext, )):
+			filename = addon_file.replace(file_ext, "")
+			module = importlib.import_module("%s.%s" % (addon, filename, ))
+			if module.format in formats:
+				error("Format collision.  Two or more addons share the same format name and are incompatable.")
+			for format in formats:
+				if formats[format]['extension'] == module.extension:
+					error("Format collision.  Two or more addons share the same extension and are incompatable.")
+			formats[module.format] = {}
+			formats[module.format]['extension'] = module.extension
+			formats[module.format]['className'] = module.className
+			formats[module.format]['module'] = module
+
+# argument variables
+format = None
+tab = "\t"
+input_file = None
+output_file = None
+actions = ""
+tabbed = False
+verbose = False
+gzip = False
+
+#ARG INTERPRETATION
+argc = len(sys.argv)
+
+#INTERPRET ACTIONS
+arg_pos = 1;
+try:
+	if sys.argv[arg_pos] == "-V" or sys.argv[arg_pos] == "--version":
+		actions = "-V"
+	elif sys.argv[arg_pos] == "-h" or sys.argv[arg_pos] == "--help":
+		actions = "-h"
+	elif sys.argv[arg_pos] == "-p" or sys.argv[arg_pos] == "--pretify":
+		actions = "-p"
+	elif sys.argv[arg_pos] == "-m" or sys.argv[arg_pos] == "--minify":
+		actions = "-m"
+	else:
+		common.error("'%s' is an invalid action." % (sys.argv[arg_pos],))
+except IndexError as e:
+	common.error("Missing arguments (action)")
+
+#INTERPRET OPTIONS
+arg_pos = 2;
+while arg_pos < argc:
+	try:
+		if sys.argv[arg_pos] == "-t" or sys.argv[arg_pos] == "--tab":
+			if arg_pos+1 > argc or tabbed:
+				raise Exception()
+			tabbed = True
+			tab = sys.argv[arg_pos+1]
+			arg_pos += 1
+			if not "-p" in actions:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		elif sys.argv[arg_pos] == "-v" or sys.argv[arg_pos] == "--verbose":
+			if verbose:
+				raise Exception()
+			verbose = True
+			if not actions in ["-p", "-m"]:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		elif sys.argv[arg_pos] == "-o" or sys.argv[arg_pos] == "--output-file":
+			if arg_pos+1 > argc or output_file != None:
+				raise Exception()
+			output_file = sys.argv[arg_pos+1]
+			arg_pos += 1
+			if not actions in ["-p", "-m"]:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		elif sys.argv[arg_pos] == "-f" or sys.argv[arg_pos] == "--format-override":
+			if arg_pos+1 > argc or format != None:
+				raise Exception()
+			format = sys.argv[arg_pos+1]
+			arg_pos += 1
+			if not actions in ["-p", "-m"]:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		elif sys.argv[arg_pos] == "-i" or sys.argv[arg_pos] == "--input-file":
+			if arg_pos+1 > argc or input_file != None:
+				raise Exception()
+			input_file = sys.argv[arg_pos+1]
+			arg_pos += 1
+			if not actions in ["-p", "-m"]:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		elif sys.argv[arg_pos] == "-g" or sys.argv[arg_pos] == "--gzip":
+			if gzip:
+				raise Exception()
+			gzip = True
+			if not output_file:
+				common.warn("Unused argument '%s'" % (sys.argv[arg_pos], ))
+		else:
+			common.error("Unnrecognized argument '%s'." % (sys.argv[arg_pos],))
+	except:
+		common.error("Failed to interpret '%s'." % (sys.argv[arg_pos],))
+	arg_pos += 1
+
+kwargs = {}
+kwargs['input_file'] = input_file
+kwargs['actions'] = actions
+kwargs['format'] = format
+kwargs['tab'] = tab
+kwargs['output_file'] = output_file
+kwargs['formats'] = formats
+kwargs['verbose'] = verbose
+kwargs['gzip'] = gzip
+
+processor.process(**kwargs)
+
+

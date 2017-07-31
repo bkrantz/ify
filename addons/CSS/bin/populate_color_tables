@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+import re
+import sys
+import os
+cur_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, '%s/../../../src' % (cur_dir,))
+import common
+
+source_file = "%s/../data/source" % (cur_dir)
+source_data = common.file_get_contents(source_file)
+
+color_table_file = "%s/../data/color_table" % (cur_dir)
+rgb_color_table_file = "%s/../data/rgb_color_table" % (cur_dir)
+
+matches = re.findall(r'([^\s]*)\s*([^\s]*)\s*([^\s]*)\s*', source_data)
+color_table_data = "{\n"
+rgb_color_table_data = "{\n"
+if matches:
+	for match in matches:
+		if len(match[0]):
+			name = match[0].upper()
+			hex_str = "#%s" % (match[1].upper(), )
+			hex_str_short = "#%s" % (re.sub(r'(?i)([0-9a-z])\1([0-9a-z])\2([0-9a-z])\3', r'\1\2\3', match[1]).upper(), )
+			rgb_str = "%s" % (match[2], )
+			shortest = name
+			if len(hex_str_short) < len(shortest):
+				shortest = hex_str_short
+			if len(rgb_str) < len(shortest):
+				shortest = rgb_str
+
+			if len(name) > len(shortest):
+				color_table_data += '\t"%s":"%s",\n' % (name, shortest, )
+			if len(hex_str_short) > len(shortest):
+				color_table_data += '\t"%s":"%s",\n' % (hex_str_short, shortest, )
+			if hex_str != hex_str_short and len(hex_str) > len(shortest):
+				color_table_data += '\t"%s":"%s",\n' % (hex_str, shortest, )
+			if len(rgb_str) > len(shortest):
+				rgb_color_table_data += '\t"%s":"%s",\n' % (rgb_str, shortest, )
+
+color_table_data = "%s%s" % (color_table_data[:-2], "\n}", )
+rgb_color_table_data = "%s%s" % (rgb_color_table_data[:-2], "\n}", )
+
+f = open(color_table_file, "w")
+f.write(color_table_data)
+f.close()
+f = open(rgb_color_table_file, "w")
+f.write(rgb_color_table_data)
+f.close()

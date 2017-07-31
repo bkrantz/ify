@@ -1,0 +1,43 @@
+#!/usr/bin/python
+
+import sys, re, os
+
+spaces_to_tabs = 4
+
+def recursive(root_path, recurse):
+	for root, dirs, files in os.walk(root_path):
+		if root == root_path or recurse:
+			if not re.match(".*\/$", root):
+				root += "/"
+			for file in files:
+				path = "%s%s" % (root, file, )
+				single(path)
+
+def single(file_path):
+	content = read_file(file_path)
+	unprocessed_lines = content.split("\n")
+	processed_lines = []
+	for line in unprocessed_lines:
+		processed_lines.append(process_line(line))
+	write_file(file_path, "\n".join(processed_lines))
+
+def process_line(line):
+	regex = "\t"
+	match = re.search(regex, line)
+	while match:
+		position = match.start()
+		replacement = ' ' * (spaces_to_tabs - (position % spaces_to_tabs))
+		line = line[:position] + replacement + line[position+1:]
+		match = re.search(regex, line)
+	return line
+
+recurse = False
+if '-r' in sys.argv:
+	recurse = True
+	sys.argv.remove('-r')
+
+if len(sys.argv) > 1:
+	if os.path.isdir(sys.argv[1]):
+		recursive(sys.argv[1], recurse)
+	elif os.path.isfile(sys.argv[1]):
+		single(sys.argv[1])

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from decimal import Decimal
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../src3/')
+
+from Minify import *
+from CSS import *
+#from Exception import *
+
+#blablabla args
+source_file = "/users/bkrantz/my_ws/pretify/test_data/test.css"
+source_file = "/users/bkrantz/catalog/catalog_scanner/css/simple-sidebar.css"
+try:
+    #minifier = Minify(source_file)
+    minifier = CSS(source_file)
+    test = minifier.minify(source_file)
+    orig = CSS._source_size
+    now = minifier._minified_size
+    ratio = Decimal(Decimal(orig) - Decimal(now)) / (Decimal(orig)) * Decimal(100)
+    print "Compression ratio: %.2f%%" % (ratio, )
+except Exception as e:
+    print e.message

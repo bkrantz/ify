@@ -1,0 +1,351 @@
+ /* !
+ * Start Bootstrap - Simple Sidebar (http://startbootstrap.com/)
+ * Copyright 2013-2016 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap/blob/gh-pages/LICENSE)
+ */
+
+ body {
+    overflow-x: hidden;
+ }
+
+/* Toggle Styles */
+
+#wrapper {
+    padding-left: 0;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled {
+    padding-left: 250px;
+}
+
+#sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 250px;
+    width: 0;
+    height: 100%;
+    margin-left: -250px;
+    overflow-y: auto;
+    background: #202a3a;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    width: 250px;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    position: absolute;
+
+	background: #2C3440;
+	min-height: 100vh;
+}
+
+#wrapper.toggled #page-content-wrapper {
+    position: absolute;
+    margin-right: -250px;
+}
+
+#top-bar-wrapper{
+	z-index: 1;
+	position: fixed;
+	top: 0px;
+	background: #121a26;
+	height: 60px;
+	width: 100%;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-o-transition: all 0.5s ease;
+	transition: all 0.5s ease;
+}
+
+/* Sidebar Styles */
+
+pre{
+	background: rgba(255,255,255,0.4);
+	border:none;
+}
+
+.content-header{
+	line-height: 70px;
+	margin: 0px;
+	color: #fff;
+	font-size: 12pt;
+	padding-left: 20px;
+}
+
+.content-title{
+	color: #fff;
+	margin: 0px;
+	font-size: 12pt;
+	line-height: 50px;
+	padding-left: 20px;
+}
+.catalog-tab.active{
+background: rgba(255,255,255,0.1);
+}
+.sidebar-nav {
+    position: absolute;
+    top: 0;
+    width: 250px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.logo{
+	background-image: url("../pics/Scanner.png");
+	background-size: 100% 100%;
+	height: 35px;
+	width: 35px;
+	line-height: 35px;
+	text-align: center;
+	border: 1px solid #444444;
+	border-radius:20px;
+	margin-top: 4px;
+	margin-right: 20px;
+}
+
+.template-icon{
+	margin-right: 6px;
+}
+
+.sidebar-nav li {
+    text-indent: 20px;
+    line-height: 40px;
+	border-bottom: 1px solid #111111;
+}
+
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #999999;
+}
+
+.sidebar-nav li a:hover {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand {
+    height: 60px;
+    font-size: 16px;
+    line-height: 30px;
+	font-weight:bold;
+	padding-top:10px;
+	padding-bottom:10px;
+}
+
+.sidebar-brand-sub{
+    height: 35px;
+    font-size: 12px;
+    line-height: 30px;
+    padding-left: 20px;
+}
+
+.status_wrapper{
+	width:100%;
+	height:5px;
+	border-radius: 10px;
+	background: #333333;
+	margin-right: 15px;
+	margin-top: 2px;
+	overflow: hidden;
+}
+
+.status_wrapper > .status-bar{
+	height:100%;
+}
+
+.statusgreen{
+	background: green;
+	animation-name: sliding-status-green;
+	animation-duration: 2s;
+}
+
+.statusred{
+	background: red;
+	animation-name: sliding-status-red;
+	animation-duration: 2s;
+}
+
+@keyframes sliding-status-green {
+    from {width: 0%; !important}
+    to {width:100%; !important}
+}
+
+@keyframes sliding-status-red {
+    from {width: 0%; !important}
+    to {width:100%; !important}
+}
+
+.verticalslider{
+	height: auto;
+	overflow: hidden;
+	background: #222;
+	animation-name: vslider-expand;
+	animation-duration: 4s;
+}
+
+.hiddenverticalslider{
+	height: auto;
+	max-height: 0;
+	overflow: hidden;
+}
+
+@keyframes vslider-expand {
+    from {max-height: 0px; overflow: hidden;}
+    to {max-height: 600px; overflow: hidden;}
+}
+
+
+.sidebar-header{
+	background: #121a26 !important;
+    //border-bottom: 2px solid rgba(160, 160, 160, 1) !important;
+    //border-bottom: 2px solid rgba(255,255,255,0.3) !important;
+
+}
+.nav-pills > li > a{
+	background: rgba(255,255,255,0.1);
+	color: rgb(230,230,250);
+}
+
+.nav-pills > li > a:hover,
+.nav-pills > li > a:active,
+.nav-pills > li > a:focus,
+.nav-pills > li > a.active{
+	background: rgba(255,255,255,0.2) !important;
+}
+
+.expand-button{
+	color: #ddd;
+	width: 15px;
+}
+
+.clickable:hover{
+	cursor: pointer;
+	cursor: hand;
+}
+
+.expand-button:hover,
+.expand-button:active{
+	color: #444;
+	text-decoration:none;
+}
+
+.refresh-button{
+	background: #9ec0f7;
+	height: 30px;
+	width: 30px;
+	color: white;
+	line-height: 30px;
+	text-align: center;
+	border: 1px solid #777777;
+	border-radius:5px;
+	margin-top: 15px;
+	margin-right: 5px;
+}
+
+.refresh-button:active{
+	background: #829fce;
+}
+
+.sidebar-nav > .sidebar-brand a {
+	color: #cccccc !important;
+	//test
+	font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica,Arial,sans-serif;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+    color: #999999;
+    background: rgba(255,255,255,0);
+}
+
+.sidebarbrandactive{
+    background: rgba(255,255,255,0.1);
+}
+
+.loading{
+	background-image: url("../pics/loading.png");
+	background-size: 100% 100%;
+	height: 200px;
+	width: 200px;
+
+	animation-iteration-count: infinite;
+	animation-name: rotator;
+	animation-duration: 1.5s;
+	animation-timing-function: linear;
+}
+
+@keyframes rotator {
+	from {
+		-webkit-transform: rotate(0deg) scaleX(-1);
+		-moz-transform: rotate(0deg) scaleX(-1);
+		-ms-transform: rotate(0deg)  scaleX(-1);
+		-o-transform: rotate(0deg) scaleX(-1);
+		transform: rotate(0deg) scaleX(-1);
+	}
+	to {
+		-webkit-transform: rotate(360deg) scaleX(-1);
+		-moz-transform: rotate(360deg) scaleX(-1);
+		-ms-transform: rotate(360deg) scaleX(-1);
+		-o-transform: rotate(360deg) scaleX(-1);
+		transform: rotate(360deg) scaleX(-1);
+	}
+}
+
+@keyframes sliding-status-red {
+    from {width: 0%; !important}
+    to {width:100%; !important}
+}
+
+
+@media(min-width:768px) {
+    #wrapper {
+        padding-left: 250px;
+    }
+
+    #wrapper.toggled {
+        padding-left: 0;
+    }
+
+    #sidebar-wrapper {
+        width: 250px;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        width: 0;
+    }
+
+    #page-content-wrapper {
+
+        position: relative;
+    }
+
+    #wrapper.toggled #page-content-wrapper {
+        position: relative;
+        margin-right: 0;
+    }
+
+	#wrapper.toggled #top-bar-wrapper{
+		padding-right: 0px;
+	}
+
+	#top-bar-wrapper{
+		padding-right: 250px;
+	}
+}

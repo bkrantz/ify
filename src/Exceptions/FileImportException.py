@@ -1,0 +1,4 @@
+from BasePretifyException import BasePretifyException
+
+class FileImportException(BasePretifyException):
+	pass
