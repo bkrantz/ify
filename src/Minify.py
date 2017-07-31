@@ -1,3 +1,5 @@
+#make smaller
+
 from Exceptions.IOException import IOException
 import os
 import common

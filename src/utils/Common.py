@@ -45,9 +45,9 @@ def toGZipFile(filename, message, mode="wb"):
     target.close()
     return filename
 
-def regexpos(source, sub_regex, test=False):
+def regexpos(source, sub_regex):
 	pos = re.search(sub_regex, source)
-	return pos.start(0) if re.findall(sub_regex, source) and pos else -1
+	return pos.start() if pos else -1
 
 def ltrim(the_str, char_regex="\s"):
     leading_whitespace_regex = "^(%s*)" % (char_regex, )

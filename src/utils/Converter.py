@@ -1,16 +1,23 @@
 import os
-import common
 import re
 
-class Converter():
+import common
+from Exceptions import *
 
-    _from = ''
-    _to = ''
+class PathConverter():
 
     def __init__(self, source, target):
-        self._from = source
-        self._to = target
+        self._from = PathConverter.normalize(source)
+        self._to = PathConverter.normalize(target)
+
+        if not os.path.exists(self._from):
+            raise FileNotFoundException(self._from)
+        if not os.path.exists(self._to):
+            raise FileNotFoundException(self._to)
+
         shared = self._shared(self._from, self._to)
+
+        #if not sharing relative paths retrieve full paths
         if not shared:
             cwd = os.getcwd()
             self._from = self._from if common.regexpos(self._from, cwd) == 0 else "%s/%s" % (cwd, self._from, )
@@ -19,14 +26,16 @@ class Converter():
             self._form = real if real else self._from
             real = os.path.realpath(self._to)
             self._to = real if real else self._to
+
         self._from = self._dirname(self._from)
         self._to = self._dirname(self._to)
-        self._from = self._normalize(self._from)
-        self._to = self._normalize(self._to)
+        self._from = PathConverter.normalize(self._from)
+        self._to = PathConverter.normalize(self._to)
 
-    def _normalize(self, path):
-        directory_seperator_regex = '[\/\\\\]'
-        up_directory_regex = "[^\/]+(?<!\.\.)\/\.\.\/"
+    @staticmethod
+    def normalize(self, path):
+        directory_seperator_regex = r'[\/\\]'
+        up_directory_regex = r"[^\/]+(?<!\.\.)\/\.\.\/"
 
         path = re.sub(directory_seperator_regex, "/", path)
         path = common.ltrim(path)
@@ -42,24 +51,26 @@ class Converter():
         path2 = path2.split("/") if path2 else []
         shared = []
 
+        len_path2 = len(path2)
         for pos, chunk in enumerate(path1):
-            if common.isset(path2[pos]) and path1[pos] == path2[pos]:
+            if pos < len_path2 and path1[pos] == path2[pos]:
                 shared.append(chunk)
             else:
                 break
 
         return "/".join(shared)
 
+    # converts relative path from source directory to target directory
     def convert(self, path):
         if self._from == self._to:
             return path
-        path = self._normalize(path)
+        path = PathConverter.normalize(path)
 
         root_regex = "^(\/)"
         if common.regexpos(path, root_regex) == 0:
             return path
 
-        path = self._normalize("%s/%s" % (self._from, path))
+        path = PathConverter.normalize("%s/%s" % (self._from, path))
         shared = self._shared(path, self._to)
         path = common.mb_substr(path, len(shared))
         to = common.mb_substr(self._to, len(shared))
