@@ -11,4 +11,14 @@ for dir in sub_files:
 		if dir == "CSS":
 			data[dir] = module.data if module and getattr(module, "data", None) else {}
 
+
 print data
+
+#import os, sys
+#dir_path = os.path.dirname(os.path.realpath(__file__))
+#sys.path.append(dir_path + '/..')
+#print sys.path
+#from src.utils.Imports import *
+#import_Ify()
+
+#print data

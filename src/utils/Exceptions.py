@@ -15,5 +15,5 @@ class FileNotFoundException(IOException):
 class FileImportException(IOException):
 	pass
 
-class InvalidContentException(BasePretifyException):
+class InvalidContentException(BaseIfyException):
 	pass
