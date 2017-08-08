@@ -12,7 +12,7 @@ for dir in sub_files:
 			data[dir] = module.data if module and getattr(module, "data", None) else {}
 
 
-print data
+#print data
 
 #import os, sys
 #dir_path = os.path.dirname(os.path.realpath(__file__))

@@ -58,7 +58,7 @@ class Minify():
         handler = self._openFileForWriting(path)
         self._writeToFile(handler, content, path)
         handler.close()
-
+    '''
     def _registerPattern(self, pattern, replacement=''):
         #pattern+='S'
         self._patterns[pattern] = replacement
@@ -122,7 +122,6 @@ class Minify():
         #pattern = "(([%s])(.*?(?<!\\\\)(\\\\\\\\)*+)\\2)" % (chars, )
         pattern = r"(([%s])(.*?(?<!\\)(\\\\)*)\2)" % (chars, )
         self._registerPattern(pattern, callback)
-
     def _extract_callback(self, match):
         if not len(match[2]):
             return match[0]
@@ -138,6 +137,7 @@ class Minify():
             content = content.replace(key, self._extracted[key])
         self._extracted = {}
         return content
+    '''
 
     def _canImportFile(self, path):
         len_check = len(path) < 260

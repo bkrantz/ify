@@ -1,4 +1,4 @@
 from src import Fortify
 
-class CSS_Fortify(Fortify):
+class CSSFortify(Fortify):
 	pass
