@@ -63,6 +63,17 @@ class IfySubstituteMixin(IfyReplaceMixin):
 class IfyPatternMixin:
 
 	def _findFirstPattern(self, content, patterns):
+		try:
+			return self._findFirstPatternDict(content=content, patterns=patterns)
+		except AttributeError:
+			pass
+		try:
+			return self._findFirstPatternList(content=content, patterns=patterns)
+		except Exception:
+			pass
+		return content
+
+	def _findFirstPatternDict(self, content, patterns):
 		patterns_found, first_position, first_pattern = {}, len(content), None
 		for pattern, value in patterns.iteritems():
 			match = re.search(pattern, content)
@@ -73,6 +84,19 @@ class IfyPatternMixin:
 					first_position = start
 					first_pattern = pattern
 		return first_pattern, patterns_found
+
+	def _findFirstPatternList(self, content, patterns):
+		patterns_found, first_position, first_pattern = [], len(content), None
+		for pattern in patterns:
+			match = re.search(pattern, content)
+			if match:
+				patterns_found.append(pattern)
+				start = match.start()
+				if start < first_position and start >= 0:
+					first_position = start
+					first_pattern = pattern
+		return first_pattern, patterns_found
+
 
 class IfyExtractorMixin(IfyReplaceMixin, IfyPatternMixin):
 
