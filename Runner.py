@@ -8,7 +8,5 @@ from src.utils.Common import *
 source_file = "/home/ben/workspace/ify/addons/CSS/test_data/test.css"
 Ify(getFile(source_file)).process()
 
-
-
 #def create_ext_map():
 #print data

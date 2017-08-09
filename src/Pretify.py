@@ -1,12 +1,12 @@
 #add spacing
 
-class Pretify:
+class Pretify(IfyProcessor, IfyPatternMixin):
 
-	spaces_per_tab = 4
+	_spaces_per_tab = 4
 
-	indent_regexes = []
-	reverese_indent_regexes = []
+	_indent_regexes = []
+	_reverese_indent_regexes = []
+
+	_current_indent_number = 0
 	
-	def __init__(self, *args, **kwargs):
-		pass
-
+	def 

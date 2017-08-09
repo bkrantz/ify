@@ -1,85 +1,55 @@
 from src import Minify
+from addons.CSS import configs
 
 class CSSMinify(Minify):
-	pass
 
-	def _shortenHex(self, content):
-		before_regex = r'(?<=[: ])'
-		after_regex = r'(?=[; }!])'
+	_colors = json.loads(configs["color_table"}])
+	_rgb = json.loads(configs["rgb_color_table"])
+	_weights = {
+		'normal':400,
+		'bold':700
+	}
 
-		#shorten hexes where possible
-		unnormalized_regex = r'(?i)%s(#([0-9a-z])\2([0-9a-z])\3([0-9a-z])\4)%s' % (before_regex, after_regex, )
-		content = re.sub(unnormalized_regex, r'#\2\3\4', content)
+	def __init__(self, *args, **kwargs):
+		super(CSSMinify, self).__init__(*args, **kwargs)
+		self._registerColorSubstitutions()
+		self._registerZeroSubstitutions()
+		self._registerStripSubstitutions()
+		self._registerNoneSubstitutions()
+		self._registerShrinkSubstitutions()
+		self._registerFontWeightSubstitutions()
 
-		#get static conversions
-		colors_file = "%s/data/color_table" % (cur_dir, )
-		colors = json.loads(common.file_get_contents(colors_file))
+	def _process(self, content):
+		content = super(CSSMinify, self)._process(content=content)
+		return self._normalizeSelectors(content=content)
 
-		#minifies color names and color hexes
-		colors_keys_regex = "(%s)" % ("|".join(str(key) for key in colors), )
-		full_keys_regex = r'(?i)%s%s%s' % (before_regex, colors_keys_regex, after_regex, )
-		matches = re.findall(full_keys_regex, content)
-		if matches:
-			for match in matches:
-				content = content.replace(match, colors[match.upper()].lower())
+	'''
+		Substitution Registration
+	'''
+	def _registerColorSubstitutions(self):
+		_before_regex = r'(?<=[: ])'
+		_after_regex = r'(?=[; }!])'
+		_sub_rgb_regex = r"(rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\))"
+		_sub_rgba_regex = r"(rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*(0|1|\.[0-9]*)\s*\))"
 
-		return content
+		_color_regex1 = r'(?i)%s(#([0-9a-z])\2([0-9a-z])\3([0-9a-z])\4)%s' % (_before_regex, _after_regex, )
+		_color_regex2 = r'(?i)%s%s%s' % (_before_regex, "(%s)" % ("|".join(str(key) for key in _colors), ), _after_regex, )
+		_color_regex3 = r"%s%s%s" % (_before_regex, _sub_rgb_regex, _after_regex, )
+		_color_regex4 = r"%s%s%s" % (_before_regex, _sub_rgba_regex, _after_regex, )
 
-	def _shortenRGB(self, content):
-		before_regex = r'(?<=[: ])'
-		after_regex = r'(?=[; }!])'
-		full_rgb_regex = r"(rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\))"
-		full_regex = "%s%s%s" % (before_regex, full_rgb_regex, after_regex, )
-		matches = re.findall(full_regex, content)
-		if matches:
-			for match in matches:
-				first = str(hex(int(match[1])))[2:]
-				second = str(hex(int(match[2])))[2:]
-				third = str(hex(int(match[3])))[2:]
-				new_hex = "#%s%s%s" % (first, second, third, )
-				content = content.replace(match[0], new_hex.lower())
-		return content
+		self._substitutions[_color_regex1] = r'#\2\3\4'
+		self._substitutions[_color_regex2] = self._colorCallback
+		self._substitutions[_color_regex3] = self._rgbCallback
+		self._substitutions[_color_regex4] = self._rgbaCallback
 
-	def _shortenRGBA(self, content):
-		before_regex = r'(?<=[: ])'
-		after_regex = r'(?=[; }!])'
-		full_rgb_regex = r"(rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*(0|1|\.[0-9]*)\s*\))"
-		full_regex = "%s%s%s" % (before_regex, full_rgb_regex, after_regex, )
-		matches = re.findall(full_regex, content)
-		if matches:
-			for match in matches:
-				if match[4] == "0":
-					content = content.replace(match[0], "rgba(0,0,0,0)")
-				elif match[4] == "1":
-					first = str(hex(int(match[1])))[2:]
-					second = str(hex(int(match[2])))[2:]
-					third = str(hex(int(match[3])))[2:]
-					new_str = "rgb(%s,%s,%s)" % (first, second, third, )
-					content = content.replace(match[0], new_str)
-		return content
-
-	def _shortenFontWeights(self, content):
-		weights = {
-			'normal':400,
-			'bold':700,
-		}
-
+	def _registerFontWeightSubstitutions(self):
 		weights_regex = "(%s)" % (("|".join(str(key) for key in weights)), )
 		full_weights_regex = r'(font-weight\s*:\s*)%s((?=[;}]))' % (weights_regex, )
-		matches = re.findall(full_weights_regex, content)
-		if matches:
-			for match in matches:
-				search = "%s%s%s" % (match[0], match[1], match[2])
-				replace = "%s%s%s" % (match[0], weights[match[1]], match[2])
-				content = content.replace(search, replace)
-		return content
 
-	def _shortenZeroes(self, content):
+	def _registerZeroSubstitutions(self):
 		before_regex = r'(?<=[:(, ])'
 		after_regex = r'(?=[ ,);}!])'
 		units_regex = r'(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|vm|s|deg|)'
-		#units_regex2 = r'(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|vm|s)'
-
 		regex_1 = r"%s(-?0*(\.0+)?)(?<=0)%s%s" % (before_regex, after_regex, units_regex, )
 		regex_2 = r"%s\.0+%s?%s" % (before_regex, after_regex, units_regex, )
 		regex_3 = r"%s(-?[0-9]+\.[0-9]+)0+%s?%s" % (before_regex, after_regex, units_regex, )
@@ -91,86 +61,82 @@ class CSSMinify(Minify):
 		regex_9 = r'\(0 \- ([^\(\)]+)\)'
 		regex_10 = r'flex:([^ ]+ [^ ]+ )0([;\}])'
 		regex_11 = r'flex-basis:0([;\}])'
+		self._substitutions[regex_1] = r'0'
+		self._substitutions[regex_2] = r'0'
+		self._substitutions[regex_3] = r'\1\2'
+		self._substitutions[regex_4] = r'\1\2'
+		self._substitutions[regex_5] = r'\1\2\3'
+		self._substitutions[regex_6] = r'0'
+		self._substitutions[regex_7] = r'(\1\2)'
+		self._substitutions[regex_8] = r'(\1)'
+		self._substitutions[regex_9] = r'(-\1)'
+		self._substitutions[regex_10] = r'flex:\1\0%\2'
+		self._substitutions[regex_11] = r'flex-basis:0%\1'
 
-		previous = ""
-		while content != previous:
-			previous = content
-			content = re.sub(regex_1, r'0', content)
-			content = re.sub(regex_2, r'0', content)
-			#content = re.sub(regex_2, r'0\1', content)
-			content = re.sub(regex_3, r'\1\2', content)
-			content = re.sub(regex_4, r'\1\2', content)
-			content = re.sub(regex_5, r'\1\2\3', content)
-			#content = re.sub(regex_6, r'0\1', content)
-			content = re.sub(regex_6, r'0', content)
-			content = re.sub(regex_7, r'(\1\2)', content)
-			content = re.sub(regex_8, r'(\1)', content)
-			content = re.sub(regex_9, r'(-\1)', content)
-			content = re.sub(regex_10, r'flex:\1\0%\2', content)
-			content = re.sub(regex_11, r'flex-basis:0%\1', content)
+	def _registerStripSubstitutions(self):
+		self._substitutions[r'(^|\}|;)[^\{\};]+\{\s*\}'] = r'\1'
 
-		return content
+		self._substitutions[r'^\s*'] = r''
+		self._substitutions[r'\s*$'] = r''
+		self._substitutions[r'\s+'] = r' '
+		self._substitutions[r'\s*([*$~^|]?\+=|[{};,>~]|!important\b)\s*'] = r'\1'
+		self._substitutions[r'([\[(:])\s+'] = r'\1'
+		self._substitutions[r'\s+([\]\)])'] = r'\1'
+		self._substitutions[r'\s+(:)(?![^\}]*\{)'] = r'\1'
+		self._substitutions[r'\s*([+-])\s*(?=[^}]*{)'] = r'\1'
+		self._substitutions[r';}'] = r'}'
+		self._substitutions[r'\s{1}'] = r' '
+		self._substitutions[r'([^\s])\s*$'] = r'\1'
+		self._substitutions[r'^\s*([^\s])'] = r'\1'
 
-	def _stripEmptyTags(self, content):
-		regex = r'(^|\}|;)[^\{\};]+\{\s*\}'
-		return re.sub(regex, r'\1', content)
+		self._substitutions[r"(\s*\;\s*)+"] = r';'
 
-	def _stripComments(self, ):
-		comment_regex_1 = r'(\s*\/\*(.|\s)*?\*\/\s*)'
-		self._registerPattern(comment_regex_1, '')
+	def _registerNoneSubstitutions(self:):
+		before_regex = r'(?<=[:(, ])'
+		after_regex = r'(?=[ ,);}!])'
+		regex = r"(?i)none"
+		self._substitutions["%s%s%s" % (before_regex, regex, after_regex, )] = r"0"
 
-	def _stripWhitespace(self, content):
-		regex_1 = r'^\s*'
-		regex_2 = r'\s*$'
-		regex_3 = r'\s+'
-		regex_4 = r'\s*([*$~^|]?\+=|[{};,>~]|!important\b)\s*'
-		regex_5 = r'([\[(:])\s+'
-		regex_6 = r'\s+([\]\)])'
-		regex_7 = r'\s+(:)(?![^\}]*\{)'
-		regex_8 = r'\s*([+-])\s*(?=[^}]*{)'
-		regex_9 = r';}'
-		regex_10 = r'\s{1}'
-
-		previous = ""
-		while content != previous:
-			previous = content
-			content = re.sub(regex_1, r'', content)
-			content = re.sub(regex_2, r'', content)
-			content = re.sub(regex_3, r' ', content)
-			content = re.sub(regex_4, r'\1', content)
-			content = re.sub(regex_5, r'\1', content)
-			content = re.sub(regex_6, r'\1', content)
-			content = re.sub(regex_7, r'\1', content)
-			content = re.sub(regex_8, r'\1', content)
-			content = re.sub(regex_9, r'}', content)
-			content = re.sub(regex_10, r' ', content)
-		return common.rtrim(common.ltrim(content))
-
-	def _shrinkURLs(self, content):
+	def _registerShrinkSubstitutions(self):
 		before_regex = r'(?<=[:(, ])'
 		after_regex = r'(?=[ ,);}!])'
 		regex = r'(url\(\s*(?P<quotes>["\'])?(?P<path>.+?)(?(quotes)(?P=quotes))\s*\))'
 		full_regex = r"%s%s%s" % (before_regex, regex, after_regex, )
-		matches = re.findall(full_regex, content)
-		if matches:
-			for match in matches:
-				search = match[0]
-				replace = "url(%s)" % (common.rtrim(common.ltrim(match[2])), )
-				content = content.replace(search, replace)
-		return content
 
-	def _stripExtraSemiColons(self, content):
-		regex = r"(\s*\;\s*)+"
-		return re.sub(regex, ";", content)
+		self._substitutions[full_regex] = self._removeWhitespaceCallback
+		self._substitutions[r"(?<=-ms-filter:)(\s*([\"\'])progid:DXImageTransform.Microsoft.Alpha\(Opacity=([0-9]+)\)\2)(?=[ ,);}!])"] = r'"alpha(opacity=\3)"'
+		self._substitutions[r"(?<=filter:)(\s*progid:\s*DXImageTransform.Microsoft.Alpha\(Opacity=([0-9]+)\))(?=[ ,);}!])"] = r"alpha(opacity=\2)"
 
-	def _shrinkEdgeCaseAlpha(self, content):
-		regex1 = r"(?<=-ms-filter:)(\s*([\"\'])progid:DXImageTransform.Microsoft.Alpha\(Opacity=([0-9]+)\)\2)(?=[ ,);}!])"
-		regex2 = r"(?<=filter:)(\s*progid:\s*DXImageTransform.Microsoft.Alpha\(Opacity=([0-9]+)\))(?=[ ,);}!])"
+	'''
+		Callbacks
+	'''
+	def _colorCallback(self, match):
+		return self._colors[match.upper()].lower()
 
-		content = re.sub(regex1, r'"alpha(opacity=\3)"', content)
-		content = re.sub(regex2, r"alpha(opacity=\2)", content)
+	def _rgbCallback(self, match):
+		match = re.sub(r"\s+", "", match)
+		match = re.sub(r"rgb\((.*)\)", r"\1", match)
+		return self._rgb[match].lower()
 
-		return content
+	def _rgbaCallback(self, match):
+		compressed = re.sub(r"\s+", "", match)
+		nums = re.sub("rgba\((.*)\)", r"\1", compressed)
+		nums = nums.split(",")
+		opacity = nums[3]
+		if opacity == "0":
+			return "rgba(0,0,0,0)"
+		elif opacity == "1":
+			return "rgb(%s)" % ",".join(nums[:2])
+		return compressed
+
+	def _fontWeightCallback(self, match):
+		for key, value in self._weights.iteritems():
+			match = re.sub(key, value, match)
+		return match
+
+	'''
+		Other
+	'''
 
 	def _getFirstLayerBlocks(self, content, open_char=r"{", close_char=r"}"):
 		extracted_blocks = {}
@@ -250,6 +216,7 @@ class CSSMinify(Minify):
 
 		return content
 
+	#TODO unused?
 	def _mergeSelectors(self, first, second):
 		common.ltrim(first, "{")
 		common.rtrim(first, "}")
@@ -263,11 +230,3 @@ class CSSMinify(Minify):
 		regex = "([^{}]*)[:]?([{]?.*[}]?)"
 		for statement in first_statment:
 			matches = re.findall(regex, statement)
-
-
-	def _replaceNone(self, content):
-		before_regex = r'(?<=[:(, ])'
-		after_regex = r'(?=[ ,);}!])'
-		regex = r"(?i)none"
-		full_regex = "%s%s%s" % (before_regex, regex, after_regex, )
-		return re.sub(full_regex, "0", content)
