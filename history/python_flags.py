@@ -25,7 +25,8 @@ try:
 			r"[\t\vf ]*(except[\t\vf ]*[\:])": 1,
 			r"[^\n]*for[\t\vf ]+[^\s]+[\t\vf ]+in[\t\vf ]+([^\s]*\.(keys|values)\(\))": 1,
 			r"[^\n]*for[\t\vf ]+[^\s]+,[\t\vf ]*[^\s]+[\t\vf ]+in[\t\vf ]+([^\s]*\.items\(\))": 1,
-			r"(?<!with)[\t\vf ]+(open\()": 1
+			r"(?<!with)[\t\vf ]+(open\()": 1,
+			r"[\s](dict.fromkeys\()", 1
 		}
 
 		#regex as key, target group as value
